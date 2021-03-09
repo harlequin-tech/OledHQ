@@ -5,8 +5,8 @@ font_t fontsHQ[] = {
 #ifdef FONT_CHECKBOOK_12
     { checkbook_12, checkbook_12_asciimap, CHECKBOOK_12_HEIGHT },
 #endif
-#ifdef FONT_CHECKBOOK_14
-    { checkbook_14, checkbook_14_asciimap, CHECKBOOK_14_HEIGHT },
+#ifdef FONT_CHECKBOOK_28
+    { checkbook_28, checkbook_28_asciimap, CHECKBOOK_28_HEIGHT },
 #endif
 #ifdef FONT_PROFONT_10_100DPI
     { profont_10_100, profont_10_100_asciimap, PROFONT_10_100_HEIGHT },

@@ -6,10 +6,10 @@
 
 // Font selection
 #undef FONT_CHECKBOOK_12
-#define FONT_CHECKBOOK_14
+#define FONT_CHECKBOOK_28
 #undef FONT_PROFONT_10_100DPI
 #undef FONT_PROFONT_10_72DPI
-#define FONT_DEFAULT font_CHECKBOOK_14
+#define FONT_DEFAULT font_CHECKBOOK_28
 //#define FONT_DEFAULT font_PROFONT_10_100DPI
 
 typedef struct {
@@ -30,8 +30,8 @@ typedef struct {
 #ifdef FONT_CHECKBOOK_12
 #include "font_checkbook_12.h"
 #endif
-#ifdef FONT_CHECKBOOK_14
-#include "font_checkbk0a.h"
+#ifdef FONT_CHECKBOOK_28
+#include "font_checkbook_28.h"
 #endif
 #ifdef FONT_PROFONT_10_100DPI
 #include "font_profont_10_100dpi.h"
@@ -44,8 +44,8 @@ typedef enum {
 #ifdef FONT_CHECKBOOK_12
     font_CHECKBOOK_12,
 #endif
-#ifdef FONT_CHECKBOOK_14
-    font_CHECKBOOK_14,
+#ifdef FONT_CHECKBOOK_28
+    font_CHECKBOOK_28,
 #endif
 #ifdef FONT_PROFONT_10_100DPI
     font_PROFONT_10_100DPI,

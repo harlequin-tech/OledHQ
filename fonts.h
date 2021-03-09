@@ -31,7 +31,7 @@ typedef struct {
 #include "font_checkbook_12.h"
 #endif
 #ifdef FONT_CHECKBOOK_14
-#include "font_checkbook_14.h"
+#include "font_checkbk0a.h"
 #endif
 #ifdef FONT_PROFONT_10_100DPI
 #include "font_profont_10_100dpi.h"

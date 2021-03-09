@@ -185,7 +185,7 @@ int OledMP::printf(const char *fmt, ...)
     return ret;
 } 
 
-int OledMP::printf(const __fstr *fmt, ...)
+int OledMP::printf(const __FlashStringHelper *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -607,9 +607,9 @@ uint8_t OledMP::glyphDraw(int16_t x, int16_t y, char ch, uint16_t colour, uint16
  *       This means the buffer will only work when writing new graphical data to the
  *       right of the last data written (e.g. when drawing a line of text).
  */
-void OledMP::bitmapDraw(uint8_t x, uint8_t y, uint16_t width, uint8_t height, uint8_t depth, const uint16_t *image)
+void OledMP::bitmapDraw(uint8_t x, uint8_t y, int16_t width, int8_t height, uint8_t depth, const uint16_t *image)
 {
-    uint8_t xoff = x - (x / 4) * 4;
+    int8_t xoff = x - (x / 4) * 4;
     uint8_t scale = (1<<depth) - 1;
 
     BitmapStream bms(depth, image, width*height);
@@ -619,12 +619,12 @@ void OledMP::bitmapDraw(uint8_t x, uint8_t y, uint16_t width, uint8_t height, ui
     writeCommand(CMD_WRITE_RAM);
 
     for (uint8_t yind=0; yind < height; yind++) {
-	uint16_t xind = 0;
+	int16_t xind = 0;
 	uint16_t pixels = 0;
 	uint16_t xcount = 0;
 	if (xoff != 0) {
 	    // fill the rest of the 4-pixel word from the bitmap
-	    for (; xind < 4-xoff; xind++) {
+	    for (; xind < (4-xoff); xind++) {
 		pixels = pixels << 4 | (bms.read() * 15) / scale;
 	    }
 

@@ -30,10 +30,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <Arduino.h>
+#include <SPI.h>
 #include <avr/pgmspace.h>
-#include <spi.h>
 
-#include "fstr.h"
 #include "fonts.h"
 #include "bitmap.h"
 
@@ -137,7 +136,7 @@ public:
 	   uint8_t volatile *dc_port,    const uint8_t dc,
 	   uint8_t volatile *reset_port, const uint8_t reset,
 	   uint8_t volatile *power_port, const uint8_t power,
-	   SPI &spi) :
+	   SPIClass &spi) :
 	port_cs(cs_port), _cs(1<<cs),
 	port_dc(dc_port), _dc(1<<dc),
 	port_reset(reset_port), _reset(1<<reset),
@@ -152,7 +151,7 @@ public:
     void clear();
     void reset();
 
-    void bitmapDraw(uint8_t x, uint8_t y, uint16_t width, uint8_t height, uint8_t depth, const uint16_t *image);
+    void bitmapDraw(uint8_t x, uint8_t y, int16_t width, int8_t height, uint8_t depth, const uint16_t *image);
     void bitmapDraw(uint8_t x, uint8_t y, const void *image);
 
     void setWindow(uint8_t x, uint8_t y, uint16_t xend, uint16_t yend);
@@ -173,7 +172,7 @@ public:
 
     void putstr(char *str);
     int printf(const char* fmt, ...);
-    int printf(const __fstr *fmt, ...);
+    int printf(const __FlashStringHelper *fmt, ...);
 
     uint8_t cur_x;
     uint8_t cur_y;
@@ -207,7 +206,7 @@ public:
     void writeByte(uint8_t data);
 
     font_t *_fontHQ;
-    SPI &_spi;
+    SPIClass &_spi;
 };
 
 #endif

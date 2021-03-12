@@ -31,10 +31,7 @@
 #include <util/delay.h>
 #include <avr/pgmspace.h>
 
-#define pinLow(port, pin)	*port &= ~pin
-#define pinHigh(port, pin)	*port |= pin
-
-#define MIN_SEG 28
+#define MIN_SEG 0
 #define MAX_SEG 91
 
 #define OLED_WIDTH 256
@@ -202,30 +199,6 @@ void OledMP::setXY(uint8_t col, uint8_t row)
     cur_y = row;
 }
 
-
-/**
- * Set pin input or output mode with optional pullup for inputs
- * @param port - the port the pin is on
- * @param pin  - the pin mask for the pin (i.e. 1 << pin_number)
- * @param mode - INPUT or OUTPUT
- * @param pullup - pullup enabled for input if true
- */
-void pinMode(uint8_t volatile *port, const uint8_t pin, uint8_t mode, bool pullup)
-{
-    uint8_t volatile *dataDir = port-1;
-
-    if (mode == INPUT) {
-	*dataDir &= ~pin;
-	if (pullup) {
-	    *port |= pin;
-	} else {
-	    *port &= ~pin;
-	}
-    } else if (mode == OUTPUT) {
-	*dataDir |= pin;
-    }
-}
-
 void OledMP::begin(uint8_t font)
 {
     foreground = 15;
@@ -241,12 +214,12 @@ void OledMP::begin(uint8_t font)
 
     setFont(font);
     
-    pinMode(port_cs, _cs, OUTPUT);
-    pinMode(port_dc, _dc, OUTPUT);
-    pinMode(port_reset, _reset, OUTPUT);
-    pinMode(port_power, _power, OUTPUT);
-    pinHigh(port_power, _power);
-    pinHigh(port_cs, _cs);
+    pinMode(_cs, OUTPUT);
+    pinMode(_dc, OUTPUT);
+    pinMode(_reset, OUTPUT);
+    pinMode(_power, OUTPUT);
+    digitalWrite(_power, HIGH);
+    digitalWrite(_cs, HIGH);
 
     reset();
     init();
@@ -273,7 +246,7 @@ void OledMP::init()
 	}
     }
 
-    pinLow(port_power, _power);	 // 12V power on
+    digitalWrite(_power, LOW);	 // 12V power on
     writeCommand(CMD_SET_DISPLAY_ON);
 }
 
@@ -283,10 +256,10 @@ void OledMP::init()
  */
 void OledMP::writeCommand(uint8_t reg)
 {
-    pinLow(port_cs, _cs);
-    pinLow(port_dc, _dc);
+    digitalWrite(_cs, LOW);
+    digitalWrite(_dc, LOW);
     _spi.transfer(reg);
-    pinHigh(port_cs, _cs);
+    digitalWrite(_cs, HIGH);
 }
 
 /**
@@ -295,10 +268,10 @@ void OledMP::writeCommand(uint8_t reg)
  */
 void OledMP::writeData(uint8_t data)
 {
-    pinLow(port_cs, _cs);
-    pinHigh(port_dc, _dc);
+    digitalWrite(_cs, LOW);
+    digitalWrite(_dc, HIGH);
     _spi.transfer(data);
-    pinHigh(port_cs, _cs);
+    digitalWrite(_cs, HIGH);
 }
 
 /**
@@ -429,9 +402,9 @@ void OledMP::clear()
  */
 void OledMP::reset()
 {
-    pinLow(port_reset, _reset);
+    digitalWrite(_reset, LOW);
     _delay_ms(100);
-    pinHigh(port_reset, _reset);
+    digitalWrite(_reset, HIGH);
     _delay_ms(10);
 }
 

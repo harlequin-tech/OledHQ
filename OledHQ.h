@@ -106,13 +106,6 @@
 #define CMD_DISPLAY_ENHANCEMENT_B	0xD1
 #define CMD_SET_COMMAND_LOCK		0xFD
 
-void pinMode(uint8_t volatile *port, const uint8_t pin, uint8_t mode, bool pullup = false);
-
-#ifndef INPUT
-#define INPUT 0
-#define OUTPUT 1
-#endif
-
 class BitmapStream {
 public:
     BitmapStream(const uint8_t bitsPerPixel, const uint16_t *data, const uint16_t size);
@@ -132,15 +125,15 @@ private:
 
 class OledMP {
 public:
-    OledMP(uint8_t volatile *cs_port,    const uint8_t cs,
-	   uint8_t volatile *dc_port,    const uint8_t dc,
-	   uint8_t volatile *reset_port, const uint8_t reset,
-	   uint8_t volatile *power_port, const uint8_t power,
+    OledMP(const uint8_t cs,
+	   const uint8_t dc,
+	   const uint8_t reset,
+	   const uint8_t power,
 	   SPIClass &spi) :
-	port_cs(cs_port), _cs(1<<cs),
-	port_dc(dc_port), _dc(1<<dc),
-	port_reset(reset_port), _reset(1<<reset),
-	port_power(power_port), _power(1<<power), _spi(spi) {};
+	_cs(cs),
+	_dc(dc),
+	_reset(reset),
+	_power(power), _spi(spi) {};
     void begin(uint8_t font=FONT_DEFAULT);
     void init(void);
     void writeCommand(uint8_t reg);
@@ -181,13 +174,9 @@ public:
     bool wrap;
 
  private:
-    uint8_t volatile *port_cs;
     uint8_t _cs;
-    uint8_t volatile *port_dc;
     uint8_t _dc;
-    uint8_t volatile *port_reset;
     uint8_t _reset;
-    uint8_t volatile *port_power;
     uint8_t _power;
     char _printBuf[64];	// scratch buffer for printf
     uint8_t end_x;

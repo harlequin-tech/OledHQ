@@ -31,7 +31,7 @@
 #include <util/delay.h>
 #include <avr/pgmspace.h>
 
-#define MIN_SEG 0
+#define MIN_SEG 28
 #define MAX_SEG 91
 
 #define OLED_WIDTH 256
@@ -155,17 +155,17 @@ void OledMP::putstr(char *str)
 
     while ((ch=*str++) != 0) {
 	if (ch == '\n') {
-	    cur_y += glyphHeight();
-	    cur_x = 0;
+	    cur_y[oled_writeBuffer] += glyphHeight();
+	    cur_x[oled_writeBuffer] = 0;
 	} else if (ch == '\r') {
 	    // skip em
 	} else {
 	    uint8_t width = glyphWidth(ch);
-	    if (wrap && ((cur_x + width) > OLED_WIDTH)) {
-		cur_y += glyphHeight();
-		cur_x = 0;
+	    if (wrap && ((cur_x[oled_writeBuffer] + width) > OLED_WIDTH)) {
+		cur_y[oled_writeBuffer] += glyphHeight();
+		cur_x[oled_writeBuffer] = 0;
 	    }
-	    cur_x += glyphDraw(cur_x, cur_y, ch, foreground, background);
+	    cur_x[oled_writeBuffer] += glyphDraw(cur_x[oled_writeBuffer], cur_y[oled_writeBuffer], ch, foreground, background);
 	}
     }
 }
@@ -195,16 +195,14 @@ int OledMP::printf(const __FlashStringHelper *fmt, ...)
 
 void OledMP::setXY(uint8_t col, uint8_t row)
 {
-    cur_x = col;
-    cur_y = row;
+    cur_x[oled_writeBuffer] = col;
+    cur_y[oled_writeBuffer] = row;
 }
 
 void OledMP::begin(uint8_t font)
 {
     foreground = 15;
     background = 0;
-    cur_x = 0;
-    cur_y = 0;
     end_x = 0;
     end_y = 0;
     wrap = true;
@@ -348,6 +346,78 @@ void OledMP::setBufHeight(uint8_t rows)
 uint8_t OledMP::getBufHeight(void)
 {
     return _bufHeight;
+}
+
+/**
+ * Move the start line of the displayed buffer in GDDRAM by the specified offset.
+ * @param offset - the amount to change the start line
+ */
+void OledMP::moveDisplayStartLine(int8_t offset)
+{
+#ifdef OLED_DEBUG
+    Serial.print(F("moveDisplayStartLine "));
+    Serial.println(offset);
+#endif
+    oled_offset = (oled_offset + offset) & OLED_Y_MASK;
+    writeCommand(CMD_SET_DISPLAY_START_LINE);
+    writeData(oled_offset);
+}
+
+/**
+ * Switch the inactive buffer to the active buffer.
+ * This displays the content of the inactive buffer and
+ * makes it the active buffer.
+ */
+void OledMP::flipDisplayedBuffer()
+{
+    oled_displayBuffer = !oled_displayBuffer;
+    oled_writeBuffer = !oled_writeBuffer;
+    oled_writeOffset = (oled_writeOffset + OLED_HEIGHT) & OLED_Y_MASK;
+    moveDisplayStartLine(OLED_HEIGHT);
+}
+
+
+// set write buffer to the be the inactive (offscreen) buffer
+void OledMP::writeInactiveBuffer()
+{
+    oled_writeBuffer = !oled_displayBuffer;
+    oled_writeOffset = OLED_HEIGHT;
+}
+
+
+// set write buffer to the be the active (onscreen) buffer
+void OledMP::writeActiveBuffer()
+{
+    oled_writeBuffer = oled_displayBuffer;
+    oled_writeOffset = 0;
+}
+
+
+/**
+ * Swap the currently displayed buffer with the inactive buffer
+ * @param mode - optionally scroll the buffer up or down with
+ *               OLED_SCROLL_UP or OLED_SCROLL_DOWN
+ * @param delay - number of msecs to wait between scrolling each line.
+ *               Set to 0 to use the global scroll speed setting
+ */
+void OledMP::flipBuffers(uint8_t mode, uint8_t delayMs)
+{
+    if (delayMs == 0) {
+        // 0 -> use global scroll delay
+        delayMs = oled_scroll_delay;
+    }
+    if (mode == 0) {
+        moveDisplayStartLine(OLED_HEIGHT);
+    } else {
+        int8_t offset = (mode == OLED_SCROLL_UP ? 1 : -1);
+        for (uint8_t ind=0; ind<OLED_HEIGHT; ind++) {
+            moveDisplayStartLine(offset);
+            delay(delayMs);
+        }
+    }
+
+    oled_displayBuffer = !oled_displayBuffer;
+    oled_writeBuffer = !oled_writeBuffer;
 }
 
 

@@ -106,6 +106,38 @@
 #define CMD_DISPLAY_ENHANCEMENT_B	0xD1
 #define CMD_SET_COMMAND_LOCK		0xFD
 
+/* CMD_SET_REMAP mode bit options */
+#define OLED_REMAP_ADDR_INC_COL   0x00 // increment column after each write
+#define OLED_REMAP_ADDR_INC_ROW   0x01 // increment row after each write
+#define OLED_REMAP_COL_ADDR       0x02 // reamap column address to inverse
+#define OLED_REMAP_NIBBLES        0x04 // Use big-endian for nibble map
+#define OLED_REMAP_SCAN_TOP_DOWN  0x00 // Scan from top down
+#define OLED_REMAP_SCAN_BOTTOM_UP 0x10 // Scan from bottom up
+
+/** DEFINES OLED SCREEN **/
+#define	OLED_Shift			0x1C
+#define OLED_Max_Column		0x3F			// 256/4-1
+#define OLED_Max_Row		0x3F			// 64-1
+#define	OLED_Brightness		0x0A
+#define OLED_Contrast		0x9F
+#define OLED_WIDTH		256
+#define OLED_HEIGHT		64
+#define OLED_Y_MASK   		(OLED_HEIGHT*2 - 1)     // Maxium y index into OLED buffer
+
+// Text line justification options
+typedef enum {
+    OLED_LEFT  = 0,
+    OLED_RIGHT = 1,
+    OLED_CENTRE = 2
+} justify_e;
+
+#define TRUE  1
+#define FALSE 0
+
+#define OLED_SCROLL_UP		1
+#define OLED_SCROLL_DOWN	2
+#define OLED_RAM_BITMAP		4
+
 class BitmapStream {
 public:
     BitmapStream(const uint8_t bitsPerPixel, const uint16_t *data, const uint16_t size);
@@ -144,6 +176,20 @@ public:
     void clear();
     void reset();
 
+    // advanced methods
+//    void oledClearLine(int16_t y);
+//    void oledScrollClear(uint8_t options);
+//    void oledScrollUp(uint8_t lines, bool clear);
+//    void oledSetDisplayStartLine(uint8_t line);
+    void moveDisplayStartLine(int8_t offset);
+    void flipBuffers(uint8_t mode, uint8_t delay);
+    void flipDisplayedBuffer(void);
+    void flipWriteBuffer(void);
+    void writeActiveBuffer(void);
+    void writeInactiveBuffer(void);
+
+    void oledSetScrollSpeed(double delay);
+
     void bitmapDraw(uint8_t x, uint8_t y, int16_t width, int8_t height, uint8_t depth, const uint16_t *image);
     void bitmapDraw(uint8_t x, uint8_t y, const void *image);
 
@@ -167,8 +213,8 @@ public:
     int printf(const char* fmt, ...);
     int printf(const __FlashStringHelper *fmt, ...);
 
-    uint8_t cur_x;
-    uint8_t cur_y;
+    uint8_t cur_x[2] = { 0,0 };
+    uint8_t cur_y[2] = { 0,0 };
     uint8_t foreground;
     uint8_t background;
     bool wrap;
@@ -185,6 +231,16 @@ public:
     uint8_t cur_row;
     uint8_t _offset;
     uint8_t _bufHeight;
+
+    uint8_t oled_offset=0;                // current display offset in GDDRAM
+    uint8_t oled_writeOffset=0;           // offset for writing 
+    uint8_t oled_bufHeight;
+    uint8_t oled_scroll_delay = 3;        // milliseconds between line scroll
+    uint8_t oled_writeBuffer = 0;
+    uint8_t oled_displayBuffer = 0;
+    uint8_t oled_isOn = FALSE;
+    uint8_t oled_cur_x[2] = { 0, 0 };
+    uint8_t oled_cur_y[2] = { 0, 0 };
 
     struct {
 	uint8_t xaddr;
